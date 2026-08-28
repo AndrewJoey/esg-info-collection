@@ -50,40 +50,64 @@ Deterministic Export
 
 ---
 
-# V0 — Structured Framework Knowledge Pilot
+# V0 — Structured ESG Source Knowledge Pilot
 
 Goal:
+
+> Given an ESG Topic, identify relevant disclosure requirements,
+> standard requirements, rating criteria and questionnaire items across
+> SSE, HKEX, GRI, MSCI and CSA-COS, while preserving exact source
+> provenance.
 
 Validate:
 
 ```text
 Topic
-→ Framework Requirement
+→ Relevant Atomic Source Unit
 → Original Source
 ```
 
+V0 source universe:
+
+| Source  | Source Category      |
+| ------- | -------------------- |
+| SSE     | exchange_rule        |
+| HKEX    | exchange_rule        |
+| GRI     | reporting_standard   |
+| MSCI    | rating_methodology   |
+| CSA-COS | rating_questionnaire |
+
+V0 therefore validates one unified pipeline across exchange rules,
+reporting standards, rating methodologies and rating questionnaires.
+
 Pilot inputs:
-- HKEX
 - SSE
+- HKEX
+- GRI
+- MSCI
+- CSA-COS
 - real project ESG topic list
 
 Key capabilities:
 - framework versioning
-- source document ingestion
-- atomic clause extraction
+- source document ingestion for all five sources
+- atomic source unit extraction (family-specific parsers behind one
+  Parser Interface)
 - provenance
 - topic import
 - candidate retrieval
 - AI relevance judgment
 - human review
-- evaluation
-- benchmark export
+- evaluation (overall and per source family)
+- unified benchmark matrix export
 
 Success criteria:
 - accurate
 - sufficiently complete
 - traceable
 - reproducible
+- precision / recall reported per source family, so no source family's
+  weakness is hidden by the overall score
 
 No full UI required.
 

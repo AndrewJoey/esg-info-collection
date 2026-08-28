@@ -1,6 +1,6 @@
 # ESG 标准对标与信息收集工具 PRD
 
-**文档版本**：v1.0  
+**文档版本**：v1.1  
 **状态**：Development Baseline  
 **适用阶段**：花西子 Pilot V0 → V2  
 **主要使用者**：ESG 咨询顾问、知识库管理员、开发/AI Agent  
@@ -60,29 +60,51 @@ ESG 咨询项目中，信息收集表通常不是凭空设计，而是需要回�
 
 第一阶段只验证一件事：
 
-> **给定一份企业 ESG 议题清单，以及上交所、港交所两个披露框架，系统能否准确、完整、可追溯地识别每个议题对应的披露要求。**
+> **给定一个 ESG 议题，从上交所（SSE）、港交所（HKEX）、GRI、MSCI、CSA-COS 中准确、完整、可追溯地识别与该议题相关的披露要求、标准要求、评级关注点和问卷准则，并完整回溯到原始来源。**
+
+即：
+
+> Given an ESG Topic, identify relevant disclosure requirements, standard requirements, rating criteria and questionnaire items across SSE, HKEX, GRI, MSCI and CSA-COS, while preserving exact source provenance.
+
+V0 不再只处理“交易所条款”，而是需要统一支持四类来源：
+
+| Source  | Source Category      | Typical Atomic Unit               |
+| ------- | -------------------- | --------------------------------- |
+| SSE     | exchange_rule        | clause / requirement              |
+| HKEX    | exchange_rule        | clause / requirement              |
+| GRI     | reporting_standard   | disclosure / requirement          |
+| MSCI    | rating_methodology   | criterion / key-issue requirement |
+| CSA-COS | rating_questionnaire | question / criterion              |
 
 第一阶段不以“生成最终信息收集表”为主要成功标准。
 
 ### Pilot V0 输入
 
 - 花西子总 ESG 议题清单 / 二级议题清单；
-- 港交所披露要求原文；
-- 上交所披露要求原文。
+- 上交所可持续发展报告披露要求原文；
+- 港交所 ESG / Sustainability Disclosure Requirements 原文；
+- GRI Standards 原文；
+- MSCI ESG Rating Methodology / 相关 Key Issue 方法论文档；
+- S&P Global CSA-COS 行业问卷 / 评估标准。
+
+实际文件版本以项目团队提供的原文为准，系统不得使用模型记忆代替正式文件。
 
 ### Pilot V0 输出
 
-一张“议题 × 框架披露要求对标底稿”，至少包括：
+一张“议题 × ESG Source Requirement Matrix（议题 × 来源要求对标底稿）”，至少包括：
 
-- 议题；
-- Framework；
-- Framework Version；
-- Section / Chapter；
-- Clause；
-- 原始披露要求；
-- 简要要求摘要；
-- 定性/定量；
-- 来源定位；
+- Topic（议题）；
+- Source Category（来源类别）；
+- Source（来源）；
+- Source Version（来源版本）；
+- Source Item Type（原子单元类型）；
+- Source Code / Clause（来源编码 / 条款号）；
+- Requirement / Criterion Summary（要求 / 准则摘要）；
+- Original Text（原文）；
+- Chapter；
+- Section；
+- Page；
+- Source Document；
 - Review Status。
 
 ### Pilot V0 成功标准
@@ -90,9 +112,10 @@ ESG 咨询项目中，信息收集表通常不是凭空设计，而是需要回�
 重点验证：
 
 1. Precision：召回内容是否真的相关；
-2. Recall：框架相关要求是否存在漏项；
+2. Recall：来源相关要求是否存在漏项；
 3. Traceability：每项结果能否回到原文；
-4. Reproducibility：同一输入重复运行是否保持稳定结构和来源。
+4. Reproducibility：同一输入重复运行是否保持稳定结构和来源；
+5. Per-source-family 评估：除 Overall Precision / Recall 外，必须分别报告 SSE / HKEX / GRI / MSCI / CSA-COS 各自的 Precision / Recall，不允许用一个总体指标掩盖某类来源质量明显偏低的问题。
 
 ---
 
@@ -224,7 +247,7 @@ AI 输出默认是 Draft。
 
 ## 6.5 原始层不合并
 
-Raw Framework Clause 永远保持原始来源结构。
+原始原子来源单元（Raw SourceClause）永远保持其原始来源结构。
 
 例如多个框架都要求 Scope 1：
 
@@ -253,13 +276,13 @@ AI 可以：
 ## 7.1 V0 主链路
 
 ```text
-Framework Document
+Framework / Standard / Rating Source Document
         ↓
-Document Parse
+Document Parse（family-specific parser）
         ↓
-Raw Clause / Requirement Extraction
+Raw Atomic Source Unit (SourceClause) Extraction
         ↓
-Framework Clause Database
+Source Atomic Unit Database
         ↓
 Company Topic List
         ↓
@@ -267,13 +290,13 @@ Candidate Retrieval
         ↓
 AI Relevance Judgment
         ↓
-Topic ↔ Clause Mapping Draft
+Topic ↔ Source Unit Mapping Draft
         ↓
 Human Review
         ↓
 Approved Mapping
         ↓
-Benchmark Excel
+Benchmark Matrix Export
 ```
 
 ## 7.2 V1 主链路
@@ -298,62 +321,115 @@ Client Information Collection Excel
 
 # 8. 数据层设计
 
+> `docs/DATA_MODEL.md` 是 V0 领域实体的唯一权威实现规范
+> （canonical implementation specification）。本章字段与枚举均与
+> DATA_MODEL 对齐；如两者出现冲突，以 DATA_MODEL 为准，
+> 不得引入第二套替代 Schema。
+
 ## 8.1 SourceDocument
 
-代表一个原始标准文件。
+代表一个来源文档的一个具体版本。
 
-建议字段：
+字段（与 `docs/DATA_MODEL.md` #3 一致）：
 
 ```yaml
-id: UUID
+document_id: UUID
 framework_id: string
-document_name: string
-publisher: string
+title: string
 version: string
 publication_date: date|null
 effective_date: date|null
 language: string
 source_url: string|null
-local_file_path: string|null
+file_path: string|null
 file_hash: string
-parser_version: string|null
-status: INGESTED|PARSED|REVIEW_REQUIRED|APPROVED|DEPRECATED
+document_type: string|null
+status: draft|ingested|parsed|review_required|approved|published|deprecated
 created_at: datetime
 updated_at: datetime
 ```
 
+状态语义：
+
+- `draft`：元数据记录已存在，但入库未完成；
+- `ingested`：原始来源已登记并计算哈希；
+- `parsed`：Parser 已产出结构化原子来源单元；
+- `review_required`：抽取结果需要人工复核；
+- `approved`：来源抽取结果已被批准；
+- `published`：可用于正式项目用途；
+- `deprecated`：已被取代 / 不再现行，但历史保留。
+
 要求：
 
 - `file_hash` 必须存在；
-- 新版本不得覆盖旧版本；
-- 同一 Framework 可以存在多个 SourceDocument Version。
+- 新版本不得覆盖旧版本，历史版本不得删除；
+- 同一 Framework 可以存在多个 SourceDocument Version；
+- 发布方信息（publisher）归属 Framework 层（见 DATA_MODEL #2），
+  不在 SourceDocument 层重复建模。
 
 ---
 
 ## 8.2 SourceClause
 
-代表标准中的最小可引用要求单元。
+代表“可独立追溯的最小原子来源单元”（Generic atomic traceable source unit）。
+
+`SourceClause` 是历史命名，不意味着所有来源都是法律/规则意义上的 Clause。
+对交易所来源它是一个条款；对 GRI 可能是 disclosure / requirement；
+对 MSCI 可能是 criterion / key-issue requirement；对 CSA-COS 可能是
+question / criterion。
+
+V0 规范字段集（与 `docs/DATA_MODEL.md` #4 一致，这是 P1 的实现依据）：
 
 ```yaml
-id: UUID
+clause_id: UUID
 document_id: UUID
-framework_id: string
-section_path: string|null
-clause_no: string|null
-title: string|null
+
+source_item_type: clause|disclosure|requirement|criterion|question|metric|guidance
+
+chapter: string|null
+section: string|null
+subsection: string|null
+
+clause_number: string|null
+source_code: string|null
+heading: string|null
+
 original_text: text
+
 page_pdf: integer|null
 page_printed: string|null
-bbox: json|null
-requirement_type: QUALITATIVE|QUANTITATIVE|MIXED|UNKNOWN
-pillar: GOVERNANCE|STRATEGY|RISK_IMPACT|METRICS_TARGETS|OTHER|null
-source_location_display: string
-extraction_method: PARSER|AI|MANUAL
-extraction_confidence: float|null
-review_status: DRAFT|REVIEWED|APPROVED|REJECTED
+source_locator: string|null
+
+qualitative_or_quantitative: qualitative|quantitative|mixed|unknown
+
+parser_name: string|null
+parser_version: string|null
+
+status: draft|reviewed|approved|rejected
+
 created_at: datetime
 updated_at: datetime
 ```
+
+`clause_number` 适合 HKEX / SSE 等规则类来源；`source_code` 是更通用的
+Source Unit Identifier（如 `GRI 305-1`、`MSCI Human Capital Development`、
+`CSA-COS 3.2.1`）。两者都可以为空，但不得由 AI 编造。
+
+`clause_number` 不是必填项：GRI / MSCI / CSA-COS 等来源不强制具有
+规则式条款编号，缺少时以 `source_code` 与 `source_locator` 定位。
+
+### 不属于 P1 规范字段的未来 / 可选概念
+
+以下字段**不是** P1 规范 SourceClause 字段，仅在后续版本按需引入：
+
+- `bbox`：Parser / 渲染层元数据，后续如需要再引入；
+- `pillar`：属于派生的 ESG 分类，不是来源事实（source truth）；
+- `requirement_type`：后续可能归属规范化 / 语义分类层；
+- `source_location_display`：展示层取值，可由规范字段计算得到。
+
+`extraction_method` 与 `extraction_confidence` 是有价值的未来入库
+QA 元数据，保留为可选 / 未来解析元数据概念；**P1 Core Domain Models
+不要求实现它们**，不得产生 P1 必须实现它们的歧义。
 
 ### 关于页码
 
@@ -363,7 +439,8 @@ PDF 实际页码可能与印刷页码不一致。
 
 - `page_pdf` 保存 PDF 物理页；
 - `page_printed` 如能识别则单独保存；
-- `clause_no + section_path + original_text` 的优先级高于单独页码。
+- `clause_number + chapter / section / subsection + original_text`
+  的优先级高于单独页码。
 
 ---
 
@@ -371,15 +448,28 @@ PDF 实际页码可能与印刷页码不一致。
 
 Pilot 阶段 Topic 由项目提供，不由系统自动创造。
 
+V0 规范实体（与 `docs/DATA_MODEL.md` #6 一致）：
+
 ```yaml
-id: UUID
-project_id: UUID
-level_1_name: string|null
-level_2_name: string
-code: string|null
+topic_id: UUID
+name: string
+parent_topic_id: UUID|null
 description: text|null
-status: ACTIVE|INACTIVE
+level: integer|null
+status: active|inactive
+created_at: datetime
+updated_at: datetime
 ```
+
+层级主题（一级 / 二级）通过 `parent_topic_id` + `level` 表达。
+
+如果 Excel 导入 / 导出需要呈现 level-1 / level-2 名称，那是
+**导入/导出表示层**（import/export representation），不是规范
+持久化字段。
+
+`Project` 实体在 V0 中被有意推迟：V0 接收项目提供的 Topic 清单，
+但不得为了给 Topic 划定归属而引入 `Project`（也不引入
+`project_id`、`level_1_name`、`level_2_name` 作为规范持久化字段）。
 
 第一阶段不得自行对企业 Topic 进行合并或重命名。
 
@@ -389,20 +479,35 @@ status: ACTIVE|INACTIVE
 
 这是 Pilot V0 的核心表。
 
+字段（与 `docs/DATA_MODEL.md` #7 一致）：
+
 ```yaml
-id: UUID
-project_id: UUID
+mapping_id: UUID
 topic_id: UUID
 clause_id: UUID
-relevance: STRONG|MEDIUM|WEAK|NOT_RELEVANT
+relevance: strong|partial|related|not_relevant
+mapping_method: keyword|embedding|hybrid|manual
+decision_origin: RULE|AI|HUMAN
 ai_reason: text|null
 ai_confidence: float|null
-decision_origin: AI|HUMAN|RULE
-review_status: DRAFT|APPROVED|REJECTED
+review_status: AI_SUGGESTED|REVIEW_REQUIRED|APPROVED|REJECTED
 reviewer: string|null
 reviewed_at: datetime|null
-notes: text|null
+created_at: datetime
+updated_at: datetime
 ```
+
+规范审核生命周期（与 ARCHITECTURE §11 一致）：
+
+```text
+AI_SUGGESTED
+→ REVIEW_REQUIRED
+→ APPROVED
+or
+→ REJECTED
+```
+
+不得使用 `AI_DRAFT`、`STRONG` / `MEDIUM` / `WEAK` 等旧命名。
 
 Pilot 正式导出默认只使用 `APPROVED` Mapping。
 
@@ -482,12 +587,15 @@ review_status: DRAFT|APPROVED|REJECTED
 
 # 9. Framework 数据入库要求
 
-## 9.1 第一批 Framework
+## 9.1 第一批 Source（V0 Source Universe）
 
 Pilot：
 
-1. 港交所相关 ESG / Sustainability Disclosure Requirements；
-2. 上交所相关可持续发展报告披露要求。
+1. 上交所（SSE）相关可持续发展报告披露要求（exchange_rule）；
+2. 港交所（HKEX）相关 ESG / Sustainability Disclosure Requirements（exchange_rule）；
+3. GRI Standards（reporting_standard）；
+4. MSCI ESG Rating Methodology / 相关 Key Issue 方法论（rating_methodology）；
+5. S&P Global CSA-COS 行业问卷 / 评估标准（rating_questionnaire）。
 
 实际文件版本以项目团队提供的原文为准。
 
@@ -502,7 +610,7 @@ Pilot：
 3. 带文字层 PDF；
 4. 扫描 PDF → OCR / Vision Fallback。
 
-## 9.3 Clause 拆分原则
+## 9.3 Source Unit 拆分原则
 
 优先按照：
 
@@ -513,7 +621,16 @@ Pilot：
 
 拆分。
 
-不允许仅按固定 token 长度切 Chunk 作为正式 Clause。
+不允许仅按固定 token 长度切 Chunk 作为正式 Source Unit（原子来源单元）。
+
+非条款类来源不按 HKEX/SSE 的 clause 结构强制拆分：
+
+- GRI 按 disclosure / requirement 拆分，并区分 Requirement /
+  Recommendation / Guidance / Disclosure；
+- MSCI 按 Key Issue / Criterion / Methodology Statement /
+  Relevant Metric / Expectation 拆分；
+- CSA-COS 按 Question / Criterion / Definition / Metric /
+  Supporting Guidance 拆分。
 
 ## 9.4 混合条款
 
@@ -543,7 +660,7 @@ Framework Metadata Filter
 
 检索阶段输出：
 
-`Candidate Clauses`
+`Candidate Source Units`（候选原子来源单元）
 
 AI 进行第二层判断：
 
@@ -557,7 +674,7 @@ AI 进行第二层判断：
 {
   "topic_id": "...",
   "clause_id": "...",
-  "relevance": "STRONG",
+  "relevance": "strong",
   "reason": "...",
   "confidence": 0.91
 }
@@ -818,8 +935,8 @@ Pilot 不要求高保真 UI，但系统逻辑至少应支持以下页面/视图�
 
 按 Topic 展示：
 
-- HKEX Candidate Clauses；
-- SSE Candidate Clauses；
+- 各来源的 Candidate Atomic Units（按 SSE / HKEX / GRI / MSCI /
+  CSA-COS 分组）；
 - Relevance；
 - AI Reason；
 - Original Text；
@@ -849,53 +966,66 @@ V1：
 
 # 18. V0 Excel 输出 Schema
 
-建议最终底稿字段顺序：
+V0 底稿从“议题 × 框架披露要求对标底稿”升级为
+**议题 × ESG Source Requirement Matrix**。
 
-1. 一级议题；
-2. 二级议题；
-3. Framework；
-4. Framework Version；
-5. Section / Chapter；
-6. Clause No.；
-7. Requirement Summary；
-8. Original Requirement；
-9. Type（定性/定量/混合）；
-10. Pillar（如适用）；
-11. Source Location；
-12. Source File；
-13. Source URL；
-14. AI Relevance；
-15. Review Status；
-16. Reviewer Note。
+最终输出至少应能表达以下字段：
+
+1. Topic（议题，可含一级/二级）；
+2. Source Category（来源类别）；
+3. Source（来源）；
+4. Source Version（来源版本）；
+5. Source Item Type（原子单元类型）；
+6. Source Code / Clause（来源编码 / 条款号）；
+7. Requirement / Criterion Summary（要求 / 准则摘要）；
+8. Original Text（原文）；
+9. Chapter；
+10. Section；
+11. Page；
+12. Source Document；
+13. Review Status。
+
+可按需附加：Type（定性/定量/混合）、Pillar（如适用）、
+Source Location / Source URL、AI Relevance、Reviewer Note。
+
+每一行都必须能回溯到对应的原子来源单元（SourceClause）。
 
 ---
 
 # 19. 状态机
 
+状态命名与 `docs/DATA_MODEL.md` 保持一致，使用同一套命名约定。
+
 ## 19.1 SourceDocument
 
 ```text
-INGESTED
-→ PARSED
-→ REVIEW_REQUIRED
-→ APPROVED
-→ DEPRECATED
+draft
+→ ingested
+→ parsed
+→ review_required
+→ approved
+→ published
+or
+→ deprecated
 ```
+
+`deprecated` 表示被新版本取代 / 不再现行；历史版本保留，不得删除。
 
 ## 19.2 SourceClause
 
 ```text
-DRAFT
-→ REVIEWED
-→ APPROVED
+draft
+→ reviewed
+→ approved
 or
-→ REJECTED
+→ rejected
 ```
 
 ## 19.3 TopicClauseMapping
 
 ```text
-AI_DRAFT
+AI_SUGGESTED
+→ REVIEW_REQUIRED
 → APPROVED
 or
 → REJECTED
@@ -1067,11 +1197,11 @@ POST /projects/{project_id}/exports/questionnaire
 
 在 V0 正式验收前建立人工 Gold Set。
 
-建议：
+要求：
 
 - 选取 5–10 个代表性 ESG Topic；
-- 人工标记 HKEX / SSE 全部相关 Clause；
-- 覆盖定性、定量、复杂条款。
+- 人工标记全部五个来源（SSE、HKEX、GRI、MSCI、CSA-COS）各自的全部相关原子单元；
+- 覆盖定性、定量、复杂条款/准则/问卷项。
 
 ## 25.2 核心指标
 
@@ -1090,6 +1220,18 @@ POST /projects/{project_id}/exports/questionnaire
 ### Source Completeness
 
 正式 Mapping 是否 100% 带 Source。
+
+### Per-source-family Precision / Recall
+
+除 Overall Precision / Recall 外，必须按来源家族单独评估：
+
+- SSE Precision / Recall；
+- HKEX Precision / Recall；
+- GRI Precision / Recall；
+- MSCI Precision / Recall；
+- CSA-COS Precision / Recall。
+
+不允许让一个 Overall 指标掩盖某类来源质量明显偏低的问题。
 
 ## 25.3 V0 建议验收门槛
 
@@ -1134,7 +1276,8 @@ POST /projects/{project_id}/exports/questionnaire
 
 ## 26.4 Duplicate Mapping
 
-对 `(project_id, topic_id, clause_id)` 设置唯一约束。
+对 `(topic_id, clause_id)` 设置唯一约束
+（V0 的 TopicClauseMapping 不含 `project_id`，见 §8.4）。
 
 ---
 
@@ -1188,6 +1331,10 @@ Pilot 主要处理公开标准和客户项目配置。
 
 # 29. 开发路线图
 
+> `docs/TASKS.md` is the authoritative source for the CURRENT
+> implementation sequence. PRD roadmap / sprint sections describe
+> product planning and must not override TASKS.
+
 ## Beta 0｜Engine Generalization
 
 ### 目标
@@ -1209,7 +1356,7 @@ Pilot 主要处理公开标准和客户项目配置。
 
 ---
 
-## V0｜Topic × Framework Requirement
+## V0｜Topic × ESG Source Requirement Matrix
 
 ### 目标
 
@@ -1217,20 +1364,27 @@ Pilot 主要处理公开标准和客户项目配置。
 
 ### 必须完成
 
-- [ ] HKEX 文档入库；
-- [ ] SSE 文档入库；
-- [ ] Clause 拆分；
+按顺序完成五个来源入库（不并行开发五套 Parser）：
+
+- [ ] SSE 文档入库（P2A，exchange_rule）；
+- [ ] HKEX 文档入库（P2A，exchange_rule）；
+- [ ] GRI 文档入库（P2B，reporting_standard）；
+- [ ] MSCI 文档入库（P2C，rating_methodology）；
+- [ ] CSA-COS 文档入库（P2D，rating_questionnaire）；
+- [ ] 原子单元（SourceClause）拆分；
 - [ ] 花西子 Topic Import；
 - [ ] Candidate Retrieval；
 - [ ] AI Relevance Classification；
+- [ ] Gold Set / Accuracy Evaluation（含分来源家族指标）；
 - [ ] 人工 Review；
 - [ ] Source Trace；
-- [ ] Benchmark Excel；
-- [ ] Gold Set / Accuracy Evaluation。
+- [ ] Benchmark Matrix Export。
 
 ### Definition of Done
 
-对 Pilot Topic，可以得到人工确认的 HKEX + SSE 披露要求清单，所有记录均能回到原文，且可稳定导出 Excel。
+对 Pilot Topic，可以得到人工确认的 SSE / HKEX / GRI / MSCI / CSA-COS
+相关要求与准则清单，所有记录均能回到原文，且可稳定导出
+Benchmark Matrix。
 
 ---
 
@@ -1377,6 +1531,9 @@ AI Agent 不得：
 
 # 32. 第一轮 Sprint 建议
 
+Sprint 划分仅用于产品规划；当前实现顺序以 `docs/TASKS.md` 为准
+（见 §29 说明），不得覆盖 TASKS 的顺序。
+
 ## Sprint 0｜项目骨架
 
 目标：让 Engine 脱离 MUJI 特定配置。
@@ -1389,16 +1546,25 @@ AI Agent 不得：
 - 数据 Schema；
 - 测试 fixture。
 
-## Sprint 1｜HKEX / SSE Clause Library
+## Sprint 1｜SSE / HKEX Atomic Source Unit Library
 
 交付：
 
-- 两个 Framework 入库；
-- Clause JSON / DB；
+- 两个交易所来源（SSE、HKEX）入库；
+- 原子单元（SourceClause）JSON / DB；
 - Source Trace；
 - 人工检查样本。
 
-## Sprint 2｜Topic Mapping
+## Sprint 2｜GRI / MSCI / CSA-COS Atomic Source Unit Library
+
+交付：
+
+- GRI、MSCI、CSA-COS 三个来源按 P2B → P2C → P2D 顺序入库；
+- 各来源按其自身原子单元结构拆分（不套用交易所 clause 结构）；
+- Source Trace；
+- 人工检查样本。
+
+## Sprint 3｜Topic Mapping
 
 交付：
 
@@ -1406,14 +1572,14 @@ AI Agent 不得：
 - Retrieval；
 - AI relevance；
 - Review；
-- Benchmark table。
+- Benchmark matrix。
 
-## Sprint 3｜Evaluation / Fix
+## Sprint 4｜Evaluation / Fix
 
 交付：
 
-- Gold set；
-- Precision / Recall；
+- Gold set（覆盖全部五个来源）；
+- Overall + per-source-family Precision / Recall；
 - Mapping failure analysis；
 - Prompt / Retrieval 调优。
 
@@ -1490,7 +1656,7 @@ V1 再增加：
 4. Canonical Requirement 的正式 Taxonomy；
 5. 定量指标 Formula 自动抽取程度；
 6. Scope 1/2/3 Activity Data 模板；
-7. 后续是否纳入 GRI / ISSB / MSCI / CSA；
+7. GRI / MSCI / CSA-COS 已决策纳入 V0（见 ADR-017）；ISSB 及其他框架的纳入时点仍待决策；
 8. UI 是否优先 Web 化；
 9. 企业客户数据是否允许外部 LLM；
 10. SaaS / 内部工具最终定位。
@@ -1507,7 +1673,7 @@ V1 再增加：
 
 而是：
 
-> **系统能稳定地把企业 ESG Topic 映射到正确、完整、可核查的交易所披露要求，并显著减少人工查框架和做对标的时间。**
+> **系统能稳定地把企业 ESG Topic 映射到正确、完整、可核查的 ESG 来源要求（交易所披露要求、标准要求、评级准则与问卷准则），并显著减少人工查框架和做对标的时间。**
 
 ## 产品成功
 
@@ -1524,17 +1690,17 @@ V1 再增加：
 ```text
 花西子 ESG Topic List
         +
-HKEX / SSE Source Documents
+SSE / HKEX / GRI / MSCI / CSA-COS Source Documents
         ↓
-Framework Clause Library
+Atomic Source Unit (SourceClause) Library
         ↓
-Topic ↔ Clause Retrieval
+Topic ↔ Source Unit Retrieval
         ↓
 AI Relevance Judgment
         ↓
 Human Review
         ↓
-Traceable Benchmark Table
+Traceable Benchmark Matrix
         ↓
 [通过验收后]
         ↓

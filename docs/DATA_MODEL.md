@@ -4,7 +4,36 @@
 
 This document defines the minimum domain model for V0.
 
-V0 target workflow:
+This document is the canonical implementation specification for V0
+domain entities. If another document (including the PRD) conflicts
+with it on entity fields or enums, this document governs
+implementation.
+
+V0 covers five sources across four source families:
+
+| Source  | Source Category      | Typical Atomic Unit               |
+| ------- | -------------------- | --------------------------------- |
+| SSE     | exchange_rule        | clause / requirement              |
+| HKEX    | exchange_rule        | clause / requirement              |
+| GRI     | reporting_standard   | disclosure / requirement          |
+| MSCI    | rating_methodology   | criterion / key-issue requirement |
+| CSA-COS | rating_questionnaire | question / criterion              |
+
+Conceptual V0 workflow:
+
+```text
+Topic
+↓
+Relevant Atomic Source Unit
+↓
+SourceDocument
+↓
+Framework / Rating System
+↓
+Original Source
+```
+
+Persistent V0 domain model:
 
 ```text
 Framework
@@ -14,17 +43,26 @@ Framework
 → TopicClauseMapping
 ```
 
+`SourceClause` is a historical V0 name. Semantically it represents the
+minimal independently traceable atomic source unit — a generic atomic
+source unit. It does NOT imply that every source is a clause in the
+legal / regulatory sense.
+
 The model must preserve source traceability.
 
 ---
 
 # 2. Framework
 
-Represents a framework or regulatory disclosure system.
+Represents a framework, reporting standard, rating system, or regulatory
+disclosure system.
 
-Examples:
-- HKEX
+V0 examples:
 - SSE
+- HKEX
+- GRI
+- MSCI
+- CSA-COS
 
 Fields:
 
@@ -43,11 +81,20 @@ updated_at
 Suggested `framework_type` values:
 
 ```text
-exchange
-framework
-rating
-standard
-guidance
+exchange_rule
+reporting_standard
+rating_methodology
+rating_questionnaire
+```
+
+V0 source-to-category mapping:
+
+```text
+SSE       → exchange_rule
+HKEX      → exchange_rule
+GRI       → reporting_standard
+MSCI      → rating_methodology
+CSA-COS   → rating_questionnaire
 ```
 
 Example:
@@ -59,7 +106,19 @@ Example:
   "name": "HKEX ESG Reporting Code",
   "publisher": "Hong Kong Exchanges and Clearing Limited",
   "jurisdiction": "Hong Kong",
-  "framework_type": "exchange",
+  "framework_type": "exchange_rule",
+  "status": "active"
+}
+```
+
+```json
+{
+  "framework_id": "FW-GRI",
+  "code": "GRI",
+  "name": "GRI Universal Standards 2021",
+  "publisher": "Global Reporting Initiative",
+  "jurisdiction": "Global",
+  "framework_type": "reporting_standard",
   "status": "active"
 }
 ```
@@ -113,11 +172,28 @@ published
 deprecated
 ```
 
+Status semantics:
+
+- `draft`: metadata record exists but ingestion is incomplete
+- `ingested`: original source registered and hashed
+- `parsed`: parser produced structured source units
+- `review_required`: extraction requires review
+- `approved`: source extraction has been approved
+- `published`: available for formal project use
+- `deprecated`: superseded / no longer current but retained historically
+
+Historical versions must not be overwritten or removed.
+
 ---
 
 # 4. SourceClause
 
-Represents an atomic source requirement.
+Represents a **generic atomic traceable source unit**.
+
+`SourceClause` is a historical V0 name. It does not imply that every
+source family uses legal / regulatory clauses. Depending on the source
+family, one record represents a clause, disclosure, requirement,
+criterion, question, metric, or guidance.
 
 This is the most important V0 entity.
 
@@ -127,27 +203,63 @@ Fields:
 clause_id
 document_id
 
+source_item_type
+
 chapter
 section
 subsection
+
 clause_number
+source_code
 heading
 
 original_text
 
 page_pdf
 page_printed
+source_locator
 
 qualitative_or_quantitative
 
 parser_name
 parser_version
 
-extraction_status
+status
 
 created_at
 updated_at
 ```
+
+Suggested `source_item_type` values:
+
+```text
+clause
+disclosure
+requirement
+criterion
+question
+metric
+guidance
+```
+
+Field semantics:
+
+- `source_item_type`: what kind of atomic unit this record is in its own
+  source family.
+- `clause_number`: identifier for rule-style numbered clauses. Suited to
+  exchange rule sources such as HKEX and SSE. May be null.
+- `source_code`: a more generic Source Unit Identifier, for example:
+
+  ```text
+  GRI 305-1
+  MSCI Human Capital Development
+  CSA-COS 3.2.1
+  ```
+
+  Both `clause_number` and `source_code` may be null, but neither may be
+  fabricated by AI.
+- `source_locator`: locator for sources that are not chapter/clause
+  structured, e.g. questionnaire path, section anchor, Key Issue name.
 
 Optional derived fields:
 
@@ -162,10 +274,11 @@ Rules:
 
 1. `original_text` is immutable.
 2. AI-generated summaries must never overwrite `original_text`.
-3. Every clause must reference a valid `SourceDocument`.
+3. Every source unit must reference a valid `SourceDocument`.
 4. Page number may be null if not reliable.
-5. Chapter / section / clause number should be preferred when available.
-6. Do not fabricate a clause number.
+5. Use chapter / section / clause_number when the source family supports
+   them; otherwise rely on `source_code` and `source_locator`.
+6. Do not fabricate a clause number or source code.
 
 Suggested `qualitative_or_quantitative` values:
 
@@ -176,9 +289,83 @@ mixed
 unknown
 ```
 
+Suggested `status` values:
+
+```text
+draft
+reviewed
+approved
+rejected
+```
+
 ---
 
-# 5. Topic
+# 5. Source Family Modeling Rules
+
+The five V0 sources must not be forced into a single clause-only shape.
+
+## SSE and HKEX (exchange_rule)
+
+- Atomic units are clauses / requirements.
+- `clause_number`, chapter and section are normally available and should
+  be preserved.
+
+## GRI (reporting_standard)
+
+- Atomic units are disclosures / requirements, typically identified by
+  `source_code` (e.g. `GRI 305-1`) rather than `clause_number`.
+- The future parser stage must distinguish at least:
+
+  ```text
+  Requirement
+  Recommendation
+  Guidance
+  Disclosure
+  ```
+
+- A Recommendation or Guidance must never be expressed as
+  "GRI requires ...".
+- Only a true Requirement may be presented as a mandatory requirement.
+
+This rule is defined at baseline level now; the parser implementing it
+is built later (see TASKS P2B). No parser is implemented yet.
+
+## MSCI (rating_methodology)
+
+- MSCI is a rating methodology, not a disclosure standard.
+- `clause_number` must not be required for MSCI units.
+- Atomic units may come from:
+
+  ```text
+  Key Issue
+  Criterion
+  Methodology Statement
+  Relevant Metric
+  Expectation
+  ```
+
+- MSCI source units are allowed to have no traditional clause numbering.
+
+## CSA-COS (rating_questionnaire)
+
+- CSA-COS is a questionnaire / rating-type source.
+- Atomic units may include:
+
+  ```text
+  Question ID
+  Question
+  Criterion
+  Definition
+  Metric
+  Supporting Guidance
+  ```
+
+- CSA-COS must not be processed with the HKEX / SSE clause parser
+  structure.
+
+---
+
+# 6. Topic
 
 Represents a client or project ESG topic.
 
@@ -212,7 +399,7 @@ Example:
 
 ---
 
-# 6. TopicClauseMapping
+# 7. TopicClauseMapping
 
 Represents a proposed or approved relationship between a topic and a source clause.
 
@@ -283,7 +470,7 @@ Rules:
 
 ---
 
-# 7. Optional V0 AI Trace
+# 8. Optional V0 AI Trace
 
 If implemented, AI inference metadata may be stored separately.
 
@@ -315,20 +502,62 @@ This is optional for first implementation but recommended.
 
 ---
 
-# 8. Gold Dataset Schema
+# 9. Gold Dataset Schema
+
+The V0 Gold Dataset must cover all five sources:
+SSE, HKEX, GRI, MSCI and CSA-COS.
+
+Evaluation must not hide behind a single overall score. It must report
+both:
+
+- overall precision / recall, and
+- precision / recall per source family
+  (SSE / HKEX / GRI / MSCI / CSA-COS),
+
+so that weak performance in any one source family is visible.
+
+Gold records identify the expected atomic source unit using whichever
+identifier the source family supports: `clause_number` for exchange rule
+sources and `source_code` for standard / rating sources.
 
 ## clauses.jsonl
 
-Used to verify clause extraction.
+Used to verify atomic source unit extraction.
 
-Example:
+Example (clause-based exchange source):
 
 ```json
 {
   "document_id": "DOC-HKEX-001",
+  "source": "HKEX",
   "expected_clause_number": "A1",
+  "expected_source_item_type": "clause",
   "expected_text_contains": "governance",
   "expected_chapter": "Governance"
+}
+```
+
+Example (code-based reporting standard source):
+
+```json
+{
+  "document_id": "DOC-GRI-2021-305",
+  "source": "GRI",
+  "expected_source_code": "GRI 305-1",
+  "expected_source_item_type": "disclosure",
+  "expected_text_contains": "Scope 1"
+}
+```
+
+Example (rating questionnaire source):
+
+```json
+{
+  "document_id": "DOC-CSA-COS-2025",
+  "source": "CSA-COS",
+  "expected_source_code": "CSA-COS 3.2.1",
+  "expected_source_item_type": "question",
+  "expected_text_contains": "water"
 }
 ```
 
@@ -336,15 +565,26 @@ Example:
 
 ## topic_mapping.jsonl
 
-Used to evaluate topic-to-clause mapping.
+Used to evaluate topic-to-source-unit mapping.
 
-Example positive:
+Example positive (clause-based):
 
 ```json
 {
   "topic_name": "应对气候变化",
-  "framework_code": "HKEX",
+  "source": "HKEX",
   "clause_number": "D1",
+  "relevant": true
+}
+```
+
+Example positive (code-based):
+
+```json
+{
+  "topic_name": "温室气体排放",
+  "source": "GRI",
+  "source_code": "GRI 305-1",
   "relevant": true
 }
 ```
@@ -354,7 +594,7 @@ Example negative:
 ```json
 {
   "topic_name": "员工培训",
-  "framework_code": "HKEX",
+  "source": "HKEX",
   "clause_number": "D1",
   "relevant": false
 }
@@ -362,7 +602,7 @@ Example negative:
 
 ---
 
-# 9. Future Model
+# 10. Future Model
 
 The following entities are planned but should NOT be implemented in V0 unless explicitly approved:
 
@@ -385,7 +625,7 @@ AuditLog
 
 ---
 
-# 10. Future Relationship Model
+# 11. Future Relationship Model
 
 ```text
 Framework
@@ -411,28 +651,39 @@ SourceClause ↔ Topic
 
 ---
 
-# 11. Data Integrity Rules
+# 12. Data Integrity Rules
 
 Mandatory:
 
 1. never delete source provenance silently
 2. never overwrite old document versions
 3. never overwrite source text with AI output
-4. never merge raw clauses
-5. never store an AI-generated framework claim without a clause reference
+4. never merge raw source units
+5. never store an AI-generated source claim without a source unit
+   reference
 6. use stable IDs
 7. support reproducible export
+8. never force non-clause source units into clause-only fields; use
+   `source_item_type` / `source_code` / `source_locator` instead
 
 ---
 
-# 12. IDs
+# 13. IDs
 
 Suggested stable ID formats:
 
 ```text
+FW-SSE
 FW-HKEX
+FW-GRI
+FW-MSCI
+FW-CSA-COS
+
 DOC-HKEX-2025-001
+DOC-GRI-2021-001
+
 CL-HKEX-2025-000001
+CL-GRI-2021-000001
 
 TOPIC-0001
 

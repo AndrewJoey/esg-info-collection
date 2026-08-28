@@ -14,17 +14,49 @@ Primary workflow:
 
 ```text
 Topic
-→ Framework Requirement
-→ Original Source
+↓
+Relevant Atomic Source Unit
+↓
+SourceDocument
+↓
+Framework / Rating System
+↓
+Original Source
 ```
 
-Initial frameworks:
-- HKEX
-- SSE
+V0 core goal:
+
+> Given an ESG Topic, identify relevant disclosure requirements,
+> standard requirements, rating criteria and questionnaire items across
+> SSE, HKEX, GRI, MSCI and CSA-COS, while preserving exact source
+> provenance.
+
+V0 source universe:
+
+| Source  | Source Category      | Typical Atomic Unit               |
+| ------- | -------------------- | --------------------------------- |
+| SSE     | exchange_rule        | clause / requirement              |
+| HKEX    | exchange_rule        | clause / requirement              |
+| GRI     | reporting_standard   | disclosure / requirement          |
+| MSCI    | rating_methodology   | criterion / key-issue requirement |
+| CSA-COS | rating_questionnaire | question / criterion              |
+
+V0 is NOT only about exchange rules. It validates one unified ESG source
+knowledge pipeline that simultaneously supports:
+
+```text
+Exchange Rules
++
+Reporting Standards
++
+Rating Methodologies
++
+Rating Questionnaires
+```
 
 The first objective is not to build a complete ESG SaaS platform.
 
-The first objective is to prove that the system can accurately and reproducibly map real ESG topics to relevant disclosure requirements while preserving original source evidence.
+The first objective is to prove that the system can accurately and reproducibly map real ESG topics to relevant requirements across all five sources while preserving original source evidence.
 
 ---
 
@@ -76,7 +108,10 @@ Potential future capabilities:
 │   ├── output/
 │   ├── sources/
 │   │   ├── hkex/
-│   │   └── sse/
+│   │   ├── sse/
+│   │   ├── gri/
+│   │   ├── msci/
+│   │   └── csa-cos/
 │   └── topics/
 ├── docs/
 │   ├── PRD.md
@@ -123,18 +158,27 @@ Topic
 TopicClauseMapping
 ```
 
+`SourceClause` is a historical name. It represents a generic atomic
+traceable source unit — a clause for exchange rules, a disclosure for
+GRI, a criterion / key-issue requirement for MSCI, a question /
+criterion for CSA-COS.
+
 ---
 
 ## Expected V0 Output
 
-Example benchmark output:
+Topic × ESG Source Requirement Matrix. Example rows:
 
-| Topic | Framework | Clause | Requirement | Original Source |
-|---|---|---|---|---|
-| 应对气候变化 | HKEX | ... | ... | ... |
-| 应对气候变化 | SSE | ... | ... | ... |
+| Topic | Source Category | Source | Source Code / Clause | Requirement / Criterion Summary | Original Source |
+|---|---|---|---|---|---|
+| 应对气候变化 | exchange_rule | HKEX | ... | ... | ... |
+| 应对气候变化 | exchange_rule | SSE | ... | ... | ... |
+| 温室气体排放 | reporting_standard | GRI | GRI 305-1 | ... | ... |
+| 人力资本发展 | rating_methodology | MSCI | Human Capital Development | ... | ... |
+| 水资源管理 | rating_questionnaire | CSA-COS | 3.2.1 | ... | ... |
 
-Every framework-backed row must be traceable to its original source clause.
+Every source-backed row must be traceable to its original atomic source
+unit, and evaluation is reported both overall and per source family.
 
 ---
 

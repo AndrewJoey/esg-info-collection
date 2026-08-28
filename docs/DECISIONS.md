@@ -294,6 +294,52 @@ The new system generalizes this into a reusable platform.
 
 ---
 
+# ADR-017 — V0 Source Universe Expanded
+
+Status: Accepted
+
+Date: 2026-08-28
+
+Extends: ADR-008 (Pilot Frameworks). ADR-008 is kept unchanged as a
+historical record; this ADR supersedes its scope.
+
+Decision:
+
+The V0 source universe is expanded from HKEX/SSE to five sources across
+four source families:
+
+| Source  | Source Category      |
+| ------- | -------------------- |
+| SSE     | exchange_rule        |
+| HKEX    | exchange_rule        |
+| GRI     | reporting_standard   |
+| MSCI    | rating_methodology   |
+| CSA-COS | rating_questionnaire |
+
+Supporting decisions:
+
+1. The five sources belong to different source families (exchange
+   disclosure rules, reporting standards, rating methodologies, rating
+   questionnaires). They must not be forced into a single clause-only
+   shape.
+2. `SourceClause` keeps its historical name but represents a generic
+   atomic traceable source unit.
+3. Raw source units must preserve their original source structure and
+   wording (`original_text` remains immutable).
+4. No cross-framework merging happens during ingestion. Raw units from
+   different sources stay separate.
+5. Normalization / CanonicalRequirement remains deferred to a later
+   version (consistent with ADR-002 and the deferred backlog).
+
+Reason:
+
+The pilot must prove that one unified pipeline can handle exchange
+rules, reporting standards, rating methodologies and rating
+questionnaires while preserving exact source provenance — not just
+clause-structured exchange rules.
+
+---
+
 # Decision Change Process
 
 If an AI agent believes an accepted decision should change:

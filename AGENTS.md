@@ -9,11 +9,14 @@ The project is an AI-assisted ESG benchmarking and data collection platform.
 Current priority is NOT to build the full platform.
 Current priority is to validate the V0 pilot workflow:
 
-Topic → Framework Requirement → Original Source
+Topic → Relevant Atomic Source Unit → Original Source
 
-The initial pilot frameworks are:
-- HKEX
-- SSE
+The V0 source universe covers five sources across four source families:
+- SSE — exchange disclosure rules (exchange_rule)
+- HKEX — exchange disclosure rules (exchange_rule)
+- GRI — reporting standard (reporting_standard)
+- MSCI — rating methodology (rating_methodology)
+- CSA-COS — rating questionnaire (rating_questionnaire)
 
 The initial pilot is based on a real ESG information collection project.
 
@@ -47,10 +50,10 @@ Do not silently override any of them.
 The following principles are mandatory.
 
 ### 1. Evidence First
-Every framework requirement must preserve provenance to its original source.
+Every source-backed requirement must preserve provenance to its original source.
 
 ### 2. No Source, No Claim
-The system must not claim that a framework requires something unless the claim is backed by a stored source clause.
+The system must not claim that a source requires something unless the claim is backed by a stored atomic source unit (SourceClause).
 
 ### 3. Retrieval != Analysis
 Retrieval finds candidate content.
@@ -90,19 +93,26 @@ Never remove provenance fields for convenience.
 
 Current milestone:
 
-`V0 Pilot — Topic → HKEX/SSE Requirement → Original Source`
+`V0 Pilot — Topic → ESG Source Requirement → Original Source`
+
+V0 core goal:
+
+> Given an ESG Topic, identify relevant disclosure requirements,
+> standard requirements, rating criteria and questionnaire items across
+> SSE, HKEX, GRI, MSCI and CSA-COS, while preserving exact source
+> provenance.
 
 In scope:
-- framework ingestion
+- source ingestion across all five sources (SSE, HKEX, GRI, MSCI, CSA-COS)
 - source document metadata
-- source clause extraction
+- atomic source unit extraction (SourceClause)
 - topic import
-- topic-to-clause candidate retrieval
+- topic-to-source-unit candidate retrieval
 - AI-assisted relevance judgment
 - source traceability
 - review status
-- evaluation
-- benchmark export
+- evaluation (overall and per source family)
+- unified benchmark matrix export
 
 Out of scope unless explicitly requested:
 - full SaaS frontend
@@ -162,6 +172,7 @@ All AI outputs that affect structured data must:
 
 Never let the model invent:
 - clause numbers
+- source codes
 - page numbers
 - framework names
 - source URLs
@@ -179,13 +190,23 @@ Every `SourceClause` must belong to a `SourceDocument`.
 
 Every `TopicClauseMapping` must reference:
 - a valid topic
-- a valid source clause
+- a valid source unit (SourceClause)
 
-Raw source clauses must not be merged.
+Raw source units must not be merged.
 
 Normalization or consolidation must happen in a separate layer.
 
 Do not create canonical requirements during V0 unless explicitly added to scope.
+
+### Mandatory Source Modeling Constraints
+
+Do not assume all source systems are clause-based.
+
+SourceClause represents a generic atomic traceable source unit.
+
+The system must support clauses, disclosures, requirements, rating
+criteria and questionnaire items without destroying source-specific
+semantics.
 
 ---
 

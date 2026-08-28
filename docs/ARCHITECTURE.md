@@ -4,12 +4,32 @@
 
 The system should evolve from a research-oriented ESG benchmarking engine into a reusable ESG knowledge and data collection platform.
 
+V0 covers five sources across four source families:
+
+| Source  | Source Category      | Typical Atomic Unit               |
+| ------- | -------------------- | --------------------------------- |
+| SSE     | exchange_rule        | clause / requirement              |
+| HKEX    | exchange_rule        | clause / requirement              |
+| GRI     | reporting_standard   | disclosure / requirement          |
+| MSCI    | rating_methodology   | criterion / key-issue requirement |
+| CSA-COS | rating_questionnaire | question / criterion              |
+
+V0 therefore validates one unified ESG source knowledge pipeline across:
+
+- exchange disclosure rules
+- reporting standards
+- rating methodologies
+- rating questionnaires
+
+`SourceClause` is a historical name for the generic atomic traceable
+source unit; not every source family is clause-based.
+
 The V0 architecture only needs to support:
 
 Source Document
-→ Source Clause
+→ Atomic Source Unit (SourceClause)
 → Topic
-→ Topic-Clause Mapping
+→ Topic-Source-Unit Mapping
 → Review
 → Export
 
@@ -63,7 +83,7 @@ PDF / DOCX / XBRL
         ↓
 Parser Layer
         ↓
-Structured Clause Candidate
+Structured Source Unit Candidate
         ↓
 Validation
         ↓
@@ -184,7 +204,7 @@ Use SQL for:
 
 Use vector search only for:
 - semantic candidate retrieval
-- similar clause retrieval
+- similar source unit retrieval
 - fuzzy topic matching
 
 ---
@@ -195,9 +215,14 @@ During local V0 development:
 
 ```text
 data/sources/
+├── hkex/
+├── sse/
+├── gri/
+├── msci/
+└── csa-cos/
 ```
 
-may be used as raw source storage.
+is used as raw source storage, one directory per source.
 
 Source files must be treated as immutable inputs.
 
@@ -215,7 +240,46 @@ The database should store metadata and storage paths, not binary PDF content.
 
 ## 8. Parser Layer
 
-Parser selection should depend on source type.
+### 8.1 Unified Parser Interface, Family-Specific Implementations
+
+The five V0 sources must not be forced to share one concrete parser.
+
+The architecture defines one unified Parser Interface. Different source
+families use different parser implementations behind it:
+
+```text
+SourceDocument
+↓
+Parser Interface
+├── Exchange Parser
+│   ├── SSE
+│   └── HKEX
+├── Reporting Standard Parser
+│   └── GRI
+└── Rating Parser
+    ├── MSCI
+    └── CSA-COS
+↓
+SourceClause / Atomic Source Unit
+```
+
+Rationale:
+
+- Exchange rules (SSE, HKEX) are clause-structured.
+- Reporting standards (GRI) are disclosure-structured and must keep
+  Requirement / Recommendation / Guidance / Disclosure distinct.
+- Rating sources (MSCI, CSA-COS) are methodology- or
+  questionnaire-structured and may have no clause numbering at all.
+
+A HKEX/SSE-style clause parser must not be imposed on GRI, MSCI or
+CSA-COS.
+
+Parsers are not implemented in the current baseline update.
+
+### 8.2 Format Strategy Within Each Parser
+
+Within each parser implementation, format selection should depend on
+source type.
 
 Preferred strategy:
 
@@ -240,7 +304,7 @@ AI is used for semantic tasks.
 
 V0 AI responsibilities:
 - topic relevance judgment
-- optional clause classification
+- optional source unit classification
 - optional requirement summarization
 
 AI must not be responsible for:
@@ -358,6 +422,13 @@ Core V0 metrics:
 - recall
 - traceability coverage
 
+The V0 Gold Dataset must cover all five sources: SSE, HKEX, GRI, MSCI
+and CSA-COS.
+
+Metrics must be reported both overall and per source family
+(SSE / HKEX / GRI / MSCI / CSA-COS). An overall score must not mask
+weak quality in any individual source family.
+
 The system should prefer measurable evaluation over subjective prompt tuning.
 
 ---
@@ -396,4 +467,6 @@ V0 is not:
 - a client portal
 - a workflow automation suite
 
-V0 is a traceable ESG framework-to-topic mapping engine.
+V0 is a traceable ESG source-to-topic mapping engine covering exchange
+rules, reporting standards, rating methodologies and rating
+questionnaires.
