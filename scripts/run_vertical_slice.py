@@ -161,23 +161,36 @@ def export_master_workbook(mappings: list[dict], clause_index: dict,
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Run SSE+HKEX vertical slice.")
+    parser = argparse.ArgumentParser(description="Run five-source pipeline slice.")
     parser.add_argument("--topic-master", default="data/output/p1_5/topic_master.csv")
     parser.add_argument("--p2a-dir", default="data/output/p2a")
+    parser.add_argument("--all-sources", action="store_true",
+                        help="Include GRI (p2b), MSCI (p2c), CSA-COS (p2d)")
     parser.add_argument("--output-dir", default="data/output")
     parser.add_argument("--min-score", type=int, default=1)
     args = parser.parse_args(argv)
 
     p2a = Path(args.p2a_dir)
     topics = load_topics(Path(args.topic_master))
-    clauses = load_clauses([
+
+    clause_files = [
         p2a / "sse_source_clauses.jsonl",
         p2a / "hkex_source_clauses.jsonl",
-    ])
-    framework_of = load_doc_framework_map([
+    ]
+    doc_files = [
         p2a / "sse_source_document.json",
         p2a / "hkex_source_document.json",
-    ])
+    ]
+    if args.all_sources:
+        base = Path(args.output_dir)
+        for sub in ["p2b", "p2c", "p2d"]:
+            d = base / sub
+            if d.is_dir():
+                clause_files.extend(sorted(d.glob("*_source_clauses.jsonl")))
+                doc_files.extend(sorted(d.glob("*_source_document.json")))
+
+    clauses = load_clauses(clause_files)
+    framework_of = load_doc_framework_map(doc_files)
     clause_index = build_clause_index(clauses)
 
     candidates = retrieve_candidates(topics, clauses, framework_of, args.min_score)
@@ -191,12 +204,15 @@ def main(argv: list[str] | None = None) -> int:
     master_xlsx = out_dir / "final" / "ESG_Information_Collection_Master.xlsx"
     export_master_workbook(mappings, clause_index, topics, master_xlsx)
 
+    from collections import Counter
+    by_fw = Counter(m["framework"] for m in mappings)
     topics_covered = len({m["topic_id"] for m in mappings})
     print(json.dumps({
         "topics_total": len(topics),
         "topics_with_candidates": topics_covered,
         "clauses_indexed": len(clauses),
         "candidate_mappings": len(mappings),
+        "mappings_by_framework": dict(by_fw),
         "matrix_csv": str(matrix_csv),
         "master_xlsx": str(master_xlsx),
     }, ensure_ascii=False, indent=2))

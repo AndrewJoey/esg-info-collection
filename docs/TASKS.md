@@ -174,47 +174,61 @@ Definition of Done:
 
 # P2B — GRI Source Ingestion (reporting_standard)
 
-- [ ] Add GRI source file under `data/sources/gri/`
-- [ ] GRI parser implementation against the Parser Interface
-- [ ] atomic units identified by `source_code` (e.g. `GRI 305-1`);
-      `clause_number` not required
-- [ ] distinguish at least:
-      Requirement / Recommendation / Guidance / Disclosure
-- [ ] never express a Recommendation or Guidance as "GRI requires ..."
+Real sources under `refer/` (ignored); outputs under `data/output/p2b/`.
+
+- [x] GRI parser implementation (`scripts/parse_gri.py`)
+- [x] atomic units identified by `source_code` (e.g. `GRI 305-1`);
+      `clause_number` not required (stays null)
+- [x] distinguish Disclosure / Requirement / Recommendation / Guidance
+      (mapped to source_item_type + heading context)
+- [x] never express a Recommendation or Guidance as "GRI requires ..."
+      (only REQUIREMENTS-section text → requirement type)
+- [x] supersession read from document text, not filename (GRI
+      305/302/201 → superseded-by notes captured); sector standards
+      (GRI 11-14) flagged, not auto-applied
+- Result: 41 standards parsed, 599 units
 
 Definition of Done:
-- GRI units parse with correct `source_item_type`
-- Requirement vs Recommendation vs Guidance vs Disclosure is preserved
-- every unit traces to a source document
+- GRI units parse with correct `source_item_type` ✅
+- Requirement vs Recommendation vs Guidance vs Disclosure preserved ✅
+- every unit traces to a source document ✅
 
 ---
 
 # P2C — MSCI Source Ingestion (rating_methodology)
 
-- [ ] Add MSCI source file under `data/sources/msci/`
-- [ ] MSCI parser implementation against the Parser Interface
-- [ ] atomic units may come from Key Issue / Criterion /
-      Methodology Statement / Relevant Metric / Expectation
-- [ ] `clause_number` must not be required
-- [ ] units without traditional clause numbering must be supported
+Real sources under `refer/MSCI/` (ignored); outputs under `data/output/p2c/`.
+
+- [x] MSCI parser implementation (`scripts/parse_msci.py`)
+- [x] atomic units as `criterion` keyed by Key Issue name (`source_code`)
+- [x] `clause_number` not required (null); units without clause
+      numbering supported
+- [x] raw ingestion kept separate from project applicability — every
+      Key Issue marked `applicability_status = pending_review` (none
+      auto-applied); methodology wording preserved, not restated as
+      mandatory disclosure
+- Result: 35 documents parsed, 429 units
 
 Definition of Done:
-- MSCI units parse and trace to a source document
-- missing clause numbering is handled as null, not fabricated
+- MSCI units parse and trace to a source document ✅
+- missing clause numbering handled as null, not fabricated ✅
 
 ---
 
 # P2D — CSA-COS Source Ingestion (rating_questionnaire)
 
-- [ ] Add CSA-COS source file under `data/sources/csa-cos/`
-- [ ] CSA-COS parser implementation against the Parser Interface
-- [ ] atomic units may include Question ID / Question / Criterion /
-      Definition / Metric / Supporting Guidance
-- [ ] must not reuse the HKEX/SSE clause parser structure
+Real source under `refer/` (ignored); outputs under `data/output/p2d/`.
+
+- [x] CSA-COS parser implementation (`scripts/parse_csa_cos.py`)
+- [x] atomic units as `question` type; criterion names extracted as
+      headings; no IDs fabricated
+- [x] does not reuse the HKEX/SSE clause parser structure (field-label
+      block segmentation, page provenance)
+- Result: 79 criterion blocks (2026 COS-industry handbook)
 
 Definition of Done:
-- CSA-COS units parse and trace to a source document
-- questionnaire structure is preserved without clause-only forcing
+- CSA-COS units parse and trace to a source document ✅
+- questionnaire structure preserved without clause-only forcing ✅
 
 ---
 

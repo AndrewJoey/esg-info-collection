@@ -52,6 +52,17 @@
   Requirement matrix → P14 review-ready
   `ESG_Information_Collection_Master.xlsx` (README / Topic_Master /
   Source_Requirement_Matrix / Review_Queue sheets); all outputs local
+- P2B GRI ingestion (`scripts/parse_gri.py`): 41 standards → 599 units,
+  Disclosure/Requirement/Recommendation/Guidance distinction,
+  supersession read from document text, sector standards flagged
+- P2C MSCI ingestion (`scripts/parse_msci.py`): 35 methodology docs →
+  429 criterion units; raw ingestion separated from applicability (all
+  Key Issues pending_review, none auto-applied)
+- P2D CSA-COS ingestion (`scripts/parse_csa_cos.py`): 79 criterion
+  blocks from the 2026 COS-industry handbook; no IDs fabricated
+- Five-source retrieval: English keyword aliases added; runner
+  `--all-sources` indexes 1271 units across SSE/HKEX/GRI/MSCI/CSA-COS
+  and covers all 28 project topics (candidates only, review_required)
 
 ### Changed
 

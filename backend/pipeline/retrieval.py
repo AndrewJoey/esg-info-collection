@@ -63,6 +63,42 @@ TOPIC_KEYWORDS: dict[str, list[str]] = {
 }
 
 
+# English keyword aliases for the same topics, to retrieve against
+# English-language sources (GRI, MSCI, CSA-COS). Deterministic retrieval
+# vocabulary only — not a relevance verdict.
+TOPIC_KEYWORDS_EN: dict[str, list[str]] = {
+    "应对气候变化": ["climate", "greenhouse", "GHG", "carbon", "emission", "net-zero"],
+    "温室气体排放": ["greenhouse", "GHG", "scope 1", "scope 2", "scope 3", "emission", "carbon"],
+    "能源利用": ["energy", "electricity", "fuel", "renewable", "consumption"],
+    "水资源利用": ["water", "effluent", "withdrawal", "discharge"],
+    "污染物排放与废弃物管理": ["waste", "effluent", "emission", "pollutant", "hazardous", "toxic"],
+    "资源利用与循环经济": ["material", "circular", "recycl", "resource", "reuse"],
+    "绿色包装": ["packaging", "material"],
+    "化学品安全与成分管理": ["chemical", "substance", "hazardous", "safety"],
+    "生物多样性保护": ["biodiversity", "land use", "ecosystem"],
+    "产品和服务安全与质量": ["product safety", "quality", "customer health", "product responsibility"],
+    "产品环境影响与评价": ["product", "life cycle", "environmental impact", "carbon footprint"],
+    "绿色产品设计": ["product", "design", "eco", "green"],
+    "产品研发创新": ["innovation", "research", "clean tech", "opportunit"],
+    "供应链管理": ["supply chain", "supplier", "procurement", "sourcing"],
+    "绿色采购": ["procurement", "supplier", "sourcing"],
+    "员工权益与福利": ["employment", "labor", "compensation", "benefit", "wage", "employee"],
+    "职业健康与安全": ["health and safety", "occupational", "injury", "safety"],
+    "员工发展与培训": ["training", "education", "development", "employee"],
+    "多元平等与包容": ["diversity", "equal", "inclusion", "gender", "discrimination"],
+    "负责任营销": ["marketing", "labeling", "advertising", "customer"],
+    "数据安全与隐私保护": ["privacy", "data security", "customer privacy", "data"],
+    "反商业贿赂与反贪污": ["anti-corruption", "bribery", "corruption"],
+    "反不正当竞争": ["anti-competitive", "competition", "antitrust"],
+    "知识产权保护": ["intellectual property", "patent", "trademark"],
+    "社区发展与社会公益": ["community", "local communities", "philanthrop", "social"],
+    "利益相关方沟通": ["stakeholder", "engagement", "communication"],
+    "文化传承与保护": ["culture", "heritage", "indigenous"],
+    "数字化建设": ["digital", "technology", "digitization"],
+    "绿色消费倡导": ["consumer", "green consumption", "sustainable consumption"],
+}
+
+
 @dataclass
 class Candidate:
     topic_id: str
@@ -101,12 +137,15 @@ def retrieve_candidates(
     candidates: list[Candidate] = []
     for topic in topics:
         name = topic["topic_name"]
-        keywords = TOPIC_KEYWORDS.get(name, [])
-        if not keywords:
+        zh_keywords = TOPIC_KEYWORDS.get(name, [])
+        en_keywords = TOPIC_KEYWORDS_EN.get(name, [])
+        if not zh_keywords and not en_keywords:
             continue
         for clause in clauses:
             text = clause.get("original_text", "")
-            hits = [kw for kw in keywords if kw in text]
+            text_lower = text.lower()
+            hits = [kw for kw in zh_keywords if kw in text]
+            hits += [kw for kw in en_keywords if kw.lower() in text_lower]
             if len(hits) >= min_score:
                 candidates.append(
                     Candidate(
