@@ -44,6 +44,14 @@
   structure to P1 SourceDocument + SourceClause models (SSE 63 clauses;
   HKEX 101 units with aspect/KPI codes and page provenance);
   synthetic-fixture parser tests
+- Pipeline scaffold (`backend/pipeline/retrieval.py`): deterministic
+  keyword candidate retrieval (Retrieval != Analysis — RULE candidates,
+  review_required, never approved; no LLM available in this environment)
+- SSE+HKEX vertical slice runner (`scripts/run_vertical_slice.py`):
+  P3 topic import → P4/P5 candidate mapping → P7 Topic × Source
+  Requirement matrix → P14 review-ready
+  `ESG_Information_Collection_Master.xlsx` (README / Topic_Master /
+  Source_Requirement_Matrix / Review_Queue sheets); all outputs local
 
 ### Changed
 
