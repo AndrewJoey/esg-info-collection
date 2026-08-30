@@ -8,7 +8,7 @@ current_phase: P7
 phase_status: vertical_slice_done_uncommitted
 branch: feat/p1-5-real-business-validation
 last_completed_phase: P7 (SSE+HKEX vertical slice)
-last_commit: dc7fb9c6e8be9dfb582a6f69711e93b6ce0c3d35
+last_commit: f7f037a35eb272c3fc6425118b33192a21178c2a
 available_inputs:
   - 议题清单.xlsx (10 departments, 28 topics, 51 scope pairs) [LOCAL]
   - refer/ SSE docx (exchange_rule) [LOCAL, ignored]
