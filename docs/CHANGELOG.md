@@ -12,7 +12,17 @@
 - Architecture decision records
 - V0 task backlog
 - ADR-017 — V0 Source Universe Expanded
+- ADR-018 — Deterministic Canonical Domain IDs
 - Source directories for `gri/`, `msci/` and `csa-cos/` under `data/sources/`
+- P1 Core Domain Models (`backend/models/`): Framework, SourceDocument,
+  SourceClause (generic atomic traceable source unit), Topic,
+  TopicClauseMapping as typed Pydantic v2 models per `docs/DATA_MODEL.md`
+- Explicit enums for all controlled values (framework category,
+  document lifecycle, source item type, relevance, mapping method,
+  decision origin, review lifecycle)
+- Deterministic stable ID generation utilities with prefixes
+  `FW-` / `DOC-` / `CL-` / `TOPIC-` / `MAP-` (`backend/models/ids.py`)
+- 133 unit tests under `tests/unit/`
 
 ### Changed
 

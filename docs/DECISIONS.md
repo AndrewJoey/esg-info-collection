@@ -340,6 +340,43 @@ clause-structured exchange rules.
 
 ---
 
+# ADR-018 — Deterministic Canonical Domain IDs
+
+Status: Accepted
+
+Decision:
+
+- V0 uses deterministic canonical domain IDs.
+- IDs are generated outside the LLM layer.
+- IDs must be independent of database row order.
+- IDs must remain stable when mutable metadata changes.
+- Only stable identity-defining fields may participate in ID
+  generation.
+- Workflow metadata such as status, AI reasoning, confidence,
+  reviewer, reviewed_at, created_at and updated_at must not
+  participate in identity.
+- Future persistence-layer surrogate keys or human-readable display
+  IDs may be added.
+- Surrogate / display IDs must not replace canonical domain IDs.
+- Changes to canonical ID algorithms are migration-sensitive and
+  require a future ADR.
+
+Note on `docs/DATA_MODEL.md` #13:
+
+The sequential examples there (e.g. `DOC-HKEX-2025-001`, `TOPIC-0001`)
+are illustrative human-readable shapes, not a requirement for
+sequential canonical ID allocation. V0 canonical IDs keep those
+prefixes but derive their suffix from a digest of stable
+identity-defining fields (see `backend/models/ids.py`).
+
+Reason:
+
+Sequential numbering requires persistent allocation state and would
+otherwise depend on registration order, conflicting with the stability
+and row-order-independence requirements above.
+
+---
+
 # Decision Change Process
 
 If an AI agent believes an accepted decision should change:

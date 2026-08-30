@@ -49,11 +49,11 @@ Definition of Done:
 
 Implement:
 
-- [ ] Framework
-- [ ] SourceDocument
-- [ ] SourceClause
-- [ ] Topic
-- [ ] TopicClauseMapping
+- [x] Framework
+- [x] SourceDocument
+- [x] SourceClause
+- [x] Topic
+- [x] TopicClauseMapping
 
 Requirements:
 - `docs/DATA_MODEL.md` is the canonical implementation specification
