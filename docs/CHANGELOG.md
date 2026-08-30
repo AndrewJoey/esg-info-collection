@@ -63,6 +63,20 @@
 - Five-source retrieval: English keyword aliases added; runner
   `--all-sources` indexes 1271 units across SSE/HKEX/GRI/MSCI/CSA-COS
   and covers all 28 project topics (candidates only, review_required)
+- AI relevance layer architecture (`backend/ai/relevance.py`):
+  provider-agnostic interface, Pydantic verdict schema, prompt template,
+  retry handling, deterministic `MockRelevanceProvider` for tests, and a
+  production-provider gate. Live production run remains blocked (no key)
+- Evaluation harness (`backend/pipeline/evaluation.py`):
+  Precision/Recall/F1 overall and per source family; awaits real Gold
+  labels (not fabricated)
+- Target ESG Collection Item Library (`scripts/build_target_library.py`):
+  158 review-ready items (76 qualitative / 82 quantitative) across all
+  28 topics with source evidence + deterministic qual/quant
+  classification; `existing_or_new` and department ownership fields
+  explicitly BLOCKED pending department forms. Master workbook extended
+  with Qualitative_Collection / Quantitative_Collection /
+  Topic_Department_Scope_Prior sheets
 
 ### Changed
 
