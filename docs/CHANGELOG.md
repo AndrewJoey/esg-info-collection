@@ -39,6 +39,11 @@
   inventories all 80 ESG source documents (SSE/HKEX/GRI/MSCI/CSA-COS)
   under `refer/`, generates local
   `data/output/source_inventory/{source_manifest.csv, source_inventory_report.md}`
+- P2A SSE + HKEX ingestion: deterministic parsers
+  (`scripts/parse_sse.py`, `scripts/parse_hkex.py`) mapping source
+  structure to P1 SourceDocument + SourceClause models (SSE 63 clauses;
+  HKEX 101 units with aspect/KPI codes and page provenance);
+  synthetic-fixture parser tests
 
 ### Changed
 

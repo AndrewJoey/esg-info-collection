@@ -148,20 +148,20 @@ implementations (see `docs/ARCHITECTURE.md` §8).
 
 # P2A — SSE + HKEX Source Ingestion (exchange_rule)
 
-Prepare and ingest:
+Note: real source files live under `refer/` (git-ignored, licensed).
+Ingested outputs are written to `data/output/p2a/` (git-ignored). Parser
+scripts and synthetic tests are committed.
 
-- [ ] Add SSE source file under `data/sources/sse/`
-- [ ] Add HKEX source file under `data/sources/hkex/`
-- [ ] Add framework metadata in `config/frameworks.yaml`
-- [ ] Add pilot project config in `config/project.yaml`
-- [ ] source file discovery and file hash generation
-- [ ] SourceDocument creation
-- [ ] Exchange Parser implementation (SSE, HKEX) against the Parser
-      Interface
-- [ ] clause / requirement extraction
-- [ ] chapter/section preservation
-- [ ] page preservation when available
-- [ ] parser validation
+- [x] SSE source located (`refer/…可持续发展报告（试行）.docx`)
+- [x] HKEX source located (`refer/HKEX港交所ESG守则.pdf`)
+- [x] source file discovery and file hash generation (P2.0 manifest)
+- [x] SourceDocument creation (P1 model)
+- [x] Exchange Parser implementation (SSE `scripts/parse_sse.py`,
+      HKEX `scripts/parse_hkex.py`)
+- [x] clause / requirement extraction (SSE 63 clauses; HKEX 101 units)
+- [x] chapter/section preservation (SSE 章; HKEX Parts A/B/C/D + aspect)
+- [x] page preservation when available (HKEX `page_pdf`)
+- [x] parser validation (synthetic-fixture unit tests)
 
 Definition of Done:
 - both exchange sources can be parsed
