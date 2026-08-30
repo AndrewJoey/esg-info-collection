@@ -37,3 +37,7 @@ logs/
 # Secrets
 *.pem
 *.key
+
+# Licensed / proprietary source material — never commit raw source docs.
+# Directory-level protection covers SSE/HKEX/GRI/MSCI/CSA-COS under refer/.
+refer/

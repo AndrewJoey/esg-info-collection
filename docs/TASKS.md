@@ -133,7 +133,10 @@ Definition of Done:
 
 ---
 
-# Source Ingestion Sequence
+# P1.6 — Existing Department Form Inventory
+
+(This phase was executed before source ingestion to search for
+department forms.)
 
 Source ingestion is split per source family. Develop P2A → P2B → P2C →
 P2D sequentially. Do not develop the five parsers in parallel.

@@ -31,6 +31,14 @@
 - Synthetic-fixture tests for the P1.5 normalization workflow
 - `.gitignore` rule protecting the real client input workbook from
   accidental commit
+- Operating layer: `CLAUDE.md`, `docs/RUN_STATE.md`,
+  `.claude/skills/esg-autopilot/SKILL.md` for resumable autonomous
+  execution
+- PDF/DOCX parsing dependencies: `pypdf`, `pdfplumber`, `python-docx`
+- P2.0 Source Manifest: `scripts/build_source_manifest.py` — hashes and
+  inventories all 80 ESG source documents (SSE/HKEX/GRI/MSCI/CSA-COS)
+  under `refer/`, generates local
+  `data/output/source_inventory/{source_manifest.csv, source_inventory_report.md}`
 
 ### Changed
 
