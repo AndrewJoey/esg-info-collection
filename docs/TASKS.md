@@ -87,6 +87,52 @@ Definition of Done:
 
 ---
 
+# P1.5 — Real Business Validation
+
+Validate the P1 domain architecture against a REAL project
+topic/department mapping file before framework ingestion. This is not
+framework ingestion and not question generation; it collects evidence
+for future modeling decisions.
+
+In execution order, **P1.5 precedes P2A**. It does not change P2 scope.
+
+Real client input must never be committed (raw workbook or any
+client-derived normalized output). Local analysis artifacts live under
+`data/output/p1_5/` and stay git-ignored.
+
+- [x] Protect real input file via exact `.gitignore` rule
+- [x] Inspect the real workbook structure (openpyxl, read-only)
+- [x] Reusable normalization workflow
+      (`scripts/p15_normalize_topic_department.py`, CLI-driven, no
+      hardcoded absolute paths)
+- [x] Forward-fill department, whitespace trim, deterministic outputs
+- [x] Detect duplicate Department × Topic pairs, blank rows, invalid
+      rows (missing topic / missing department)
+- [x] Validate every real topic against the canonical P1 `Topic` model
+- [x] Local outputs: `topic_master.csv`,
+      `topic_department_scope_mapping.csv`, `source_row_audit.csv`,
+      `validation_summary.json`, `validation_report.md`
+- [x] Department-form input contract
+      (`docs/P1_5_DEPARTMENT_FORM_INPUT_CONTRACT.md`, generic, no client
+      data)
+- [x] Synthetic-fixture unit tests (no real client content)
+
+Explicitly NOT done in P1.5 (evidence-gathering only):
+- no `Department` / `DepartmentTopicMapping` domain model
+- no `Question` / `InformationPoint` / `QuestionTemplate`
+- no `CanonicalRequirement` / `Project` / `Client` / `Materiality`
+- no E/S/G or 一级/二级 hierarchy inference
+- `level=1` / `parent_topic_id=null` are provisional import-structure
+  values, not an inferred ESG hierarchy
+
+Definition of Done:
+- real topic import validates against the P1 `Topic` model
+- Topic × Department scope normalized with full source provenance
+- normalization workflow covered by synthetic tests
+- no real client data committed
+
+---
+
 # Source Ingestion Sequence
 
 Source ingestion is split per source family. Develop P2A → P2B → P2C →

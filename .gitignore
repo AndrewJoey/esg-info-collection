@@ -26,6 +26,10 @@ venv/
 data/output/*
 !data/output/.gitkeep
 
+# Real client input (never commit raw client working data)
+# Exact path only — do not ignore all .xlsx (synthetic templates may be versioned)
+/议题清单.xlsx
+
 # Logs
 *.log
 logs/

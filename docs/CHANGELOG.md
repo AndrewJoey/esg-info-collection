@@ -23,6 +23,14 @@
 - Deterministic stable ID generation utilities with prefixes
   `FW-` / `DOC-` / `CL-` / `TOPIC-` / `MAP-` (`backend/models/ids.py`)
 - 133 unit tests under `tests/unit/`
+- P1.5 Real Business Validation: reusable Topic × Department scope
+  normalization workflow (`scripts/p15_normalize_topic_department.py`)
+  validating real project topics against the P1 `Topic` model
+- Department-form input contract
+  (`docs/P1_5_DEPARTMENT_FORM_INPUT_CONTRACT.md`)
+- Synthetic-fixture tests for the P1.5 normalization workflow
+- `.gitignore` rule protecting the real client input workbook from
+  accidental commit
 
 ### Changed
 
