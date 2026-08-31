@@ -77,6 +77,16 @@
   explicitly BLOCKED pending department forms. Master workbook extended
   with Qualitative_Collection / Quantitative_Collection /
   Topic_Department_Scope_Prior sheets
+- Claude Code analyst review layer (`backend/pipeline/analyst_review.py`,
+  `scripts/run_analyst_review.py`): temporary, auditable, deterministic
+  relevance calibration (review_method=claude_code_analyst,
+  production_provider=false — NOT a production LLM run). Conservative
+  demotion of glossary/boilerplate + rating-source name-match tightening
+  reduces 2560 candidates to 149 defensible positives across 28 topics.
+  Human QM questionnaire baseline calibration: 24 questions classified
+  (18 compound / 3 too-broad), compound-question decomposition, and a
+  Claude-Code-reviewed provisional workbook. All local outputs
+  git-ignored; `.gitignore` protects the QM baseline file
 
 ### Changed
 
