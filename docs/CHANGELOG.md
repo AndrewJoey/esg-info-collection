@@ -87,6 +87,16 @@
   (18 compound / 3 too-broad), compound-question decomposition, and a
   Claude-Code-reviewed provisional workbook. All local outputs
   git-ignored; `.gitignore` protects the QM baseline file
+- Quality Management single-department collection workbook
+  (`backend/pipeline/qm_collection.py`, `scripts/build_qm_workbook.py`):
+  scoped to the 3 client-confirmed QM topics; 17 information points →
+  17 collection items (13 qualitative + 4 quantitative) with build-time
+  No-Source-No-Claim verification (100% framework-backed traceability);
+  all 24 human baseline questions transformed (retain/rewrite/split/
+  merge); six-sheet workbook (填写说明/定性/定量/来源对标/优化对照/待确认).
+  Bilingual semantic review recovered MSCI Chemical Safety + GRI 301/416/417
+  evidence missed by the earlier lexical pass. review_method=
+  claude_code_semantic_review, production_provider=false
 
 ### Changed
 

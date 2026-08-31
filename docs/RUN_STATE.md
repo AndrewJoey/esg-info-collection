@@ -4,11 +4,11 @@ Machine-and-human readable execution state for the autonomous V0 run.
 Update after every milestone.
 
 ```yaml
-current_phase: Claude Code Analyst Mode + human-baseline calibration
-phase_status: analyst_review_complete
+current_phase: QM Department workbook (single-department deliverable)
+phase_status: complete
 branch: feat/p1-5-real-business-validation
-last_completed_phase: Claude Code analyst review + QM human-baseline comparison
-last_commit: c60d70230604a6736c41ca2988b62a609aa68f18
+last_completed_phase: Quality Management workbook (3 topics, 6 sheets)
+last_commit: 28621b4f7b23c4f7f67a6a66700390c863da15a8
 available_inputs:
   - 议题清单.xlsx (10 departments, 28 topics, 51 scope pairs) [LOCAL]
   - refer/ SSE docx (exchange_rule) [LOCAL, ignored]
@@ -28,7 +28,7 @@ missing_inputs:
     provides auditable deterministic relevance review as calibration,
     WITHOUT faking a production provider.
 hard_stop_reason: null
-test_status: "229 passed (adds analyst review layer tests)"
+test_status: "241 passed (adds QM collection builder tests)"
 quality_metrics:
   p1_5: "28/28 topics valid; 51 scope pairs; many-to-many confirmed"
   p2_0: "80 source files hashed (SSE 1, HKEX 1, GRI 42, MSCI 35, CSA-COS 1); GRI 306 overlap detected"
@@ -42,6 +42,7 @@ quality_metrics:
   evaluation_harness: "Precision/Recall/F1 overall + per-source-family; awaits real Gold labels"
   target_library: "158 items (76 qualitative, 82 quantitative), 28/28 topics; existing_or_new + department fields BLOCKED pending dept forms"
   claude_code_analyst: "1637 unique candidates reviewed across 28 topics; 149 positive (70 strong, 79 partial) after conservative demotion; MSCI tightened to name-match (11 genuine); CSA-COS 0 (CN/EN vocab gap, known limitation). QM baseline: 24 questions, 18 compound, 3 too_broad. review_method=claude_code_analyst, production_provider=false"
+  qm_workbook: "质量管理部 deliverable: 3 topics, 17 information points, 17 collection items (13 qualitative + 4 quantitative), all 24 human questions transformed, 100% framework-backed traceability verified, 6 sheets. CSA/MSCI recovered via bilingual semantic review (CHM-IP-03/05 cite MSCI Chemical Safety). review_method=claude_code_semantic_review, production_provider=false"
 unresolved_non_blocking_issues:
   - GRI version/supersession must be read from source text, not filename
   - MSCI Key Issue applicability must be justified per project, not
