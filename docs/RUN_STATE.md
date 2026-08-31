@@ -4,11 +4,11 @@ Machine-and-human readable execution state for the autonomous V0 run.
 Update after every milestone.
 
 ```yaml
-current_phase: QM Department workbook (single-department deliverable)
+current_phase: QM Department Blind Bottom-Up V2 (source-driven, no human baseline)
 phase_status: complete
 branch: feat/p1-5-real-business-validation
-last_completed_phase: Quality Management workbook (3 topics, 6 sheets)
-last_commit: 28621b4f7b23c4f7f67a6a66700390c863da15a8
+last_completed_phase: QM Blind Bottom-Up V2 (3 topics, 2-sheet deliverable, blind)
+last_commit: 9f3f631
 available_inputs:
   - 议题清单.xlsx (10 departments, 28 topics, 51 scope pairs) [LOCAL]
   - refer/ SSE docx (exchange_rule) [LOCAL, ignored]
@@ -43,6 +43,7 @@ quality_metrics:
   target_library: "158 items (76 qualitative, 82 quantitative), 28/28 topics; existing_or_new + department fields BLOCKED pending dept forms"
   claude_code_analyst: "1637 unique candidates reviewed across 28 topics; 149 positive (70 strong, 79 partial) after conservative demotion; MSCI tightened to name-match (11 genuine); CSA-COS 0 (CN/EN vocab gap, known limitation). QM baseline: 24 questions, 18 compound, 3 too_broad. review_method=claude_code_analyst, production_provider=false"
   qm_workbook: "质量管理部 deliverable: 3 topics, 17 information points, 17 collection items (13 qualitative + 4 quantitative), all 24 human questions transformed, 100% framework-backed traceability verified, 6 sheets. CSA/MSCI recovered via bilingual semantic review (CHM-IP-03/05 cite MSCI Chemical Safety). review_method=claude_code_semantic_review, production_provider=false"
+  qm_blind_v2: "质量管理部 Blind Bottom-Up V2: source-driven, NO human questionnaire/quant table/A-C-D/comparison read during generation (blindness=YES, enforced by fresh per-topic analyst subagents seeing only topic boundary + faithful source text). 12 applicable source units after Topic Applicability Gate (SSE 1, HKEX 4, GRI 5, MSCI 2, CSA-COS 0 — honest zero, not padded). 15 collection items (8 qualitative + 7 quantitative) across 11 information points. Deterministic QA: 0 traceability / 0 applicability / 0 metric-exactness / 0 duplicate failures. 5 regression cases all PASS (no 投诉闭环率 KPI; HKEX B6.1 stays percentage; GRI 416-2 count+3way; GRI 301 excluded from chemical safety; GRI 418 excluded from responsible marketing). Independent 2nd Business Reviewer pass = APPROVE_WITH_MINOR (dept-fit flags + MKT-01 label rewrite applied). Final Excel data/output/final/质量管理部_Blind_BottomUp_V2.xlsx = exactly 2 sheets (定性/定量), fixed 10-field schema, 内容填写/附件/填写人 empty. Reusable QA gates + 19 tests committed (no client data). review_method=claude_code_semantic_analyst, production_provider=false"
 unresolved_non_blocking_issues:
   - GRI version/supersession must be read from source text, not filename
   - MSCI Key Issue applicability must be justified per project, not

@@ -4,6 +4,14 @@
 
 ### Added
 
+- Reusable blind-generation QA gates (`backend/pipeline/blind_generation_qa.py`):
+  framework/client-agnostic `TopicApplicabilityGate` (Gate A/B/C, with
+  spanning-source + whitelist support), `evidence_directness`,
+  `metric_exactness` (count↔percentage drift guard; qualitative-source→KPI
+  fabrication guard via per-source `quantitative_components`), and
+  `traceability` (No Source, No Claim). Plus `run_all_gates` aggregator.
+- 19 synthetic unit tests (`tests/unit/test_blind_generation_qa.py`) covering
+  every gate and the generic form of the five regression guards. Suite: 260 passed.
 - Initial repository structure
 - AI development instructions
 - Architecture baseline
