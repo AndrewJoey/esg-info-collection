@@ -31,6 +31,9 @@ data/output/*
 /议题清单.xlsx
 /数据收集表—质量管理部.xlsx
 /数据收集表—质量管理部-定量.xlsx
+# Real human-authored department baseline workbooks (Baseline-First inputs)
+/已有清单/
+/已有清单/*.xlsx
 
 # Logs
 *.log
